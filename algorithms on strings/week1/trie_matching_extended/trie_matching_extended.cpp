@@ -34,9 +34,75 @@ int letterToIndex (char letter)
 	}
 }
 
+vector<Node> makeTrie(const vector<string> patterns) {
+	vector<Node> res;
+	Node nn;
+	res.push_back(nn);
+	int count = 0;
+	for(int i=0;i<patterns.size();i++) {
+		int current = 0;
+		for(int j=0;j<patterns[i].size();j++) {
+			int letter = letterToIndex(patterns[i][j]);
+			if(res[current].next[letter] == NA) {
+				res[current].next[letter] = ++count;
+				Node t;
+				res.push_back(t);
+				current = count;
+			} else {
+				current  = res[current].next[letter];
+			}
+			if(j==patterns[i].size()-1) {
+				res[current].patternEnd = true;
+			}
+		}
+	}
+
+	return res;
+}
+
+
+bool isPresent(vector<Node> &trie, string text) {
+	int current = 0;
+	int c =0;
+	int letter = letterToIndex(text[c]);
+	while(c<text.size()) {
+		if(trie[current].patternEnd) {
+			return true;
+		} else if(trie[current].next[letter] != NA) {
+			current = trie[current].next[letter];
+			c++;
+			if(c < text.size()) {
+				letter = letterToIndex(text[c]);
+			} else {
+				if(trie[current].patternEnd)
+					return true;
+				else
+						return false;
+			}
+		} else {
+			if (trie[current].patternEnd) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+	return false;
+
+}
+
+
 vector <int> solve (string text, int n, vector <string> patterns)
 {
 	vector <int> result;
+	vector<Node> trie = makeTrie(patterns);
+
+	for(int i=0;i<text.size();i++) {
+		if(isPresent(trie,text.substr(i,text.size()-i))) {
+			result.push_back(i);
+		}
+	}
+
 
 	// write your code here
 
@@ -46,7 +112,7 @@ vector <int> solve (string text, int n, vector <string> patterns)
 int main (void)
 {
 	string t;
-	cin >> text;
+	cin >> t;
 
 	int n;
 	cin >> n;
@@ -58,7 +124,7 @@ int main (void)
 	}
 
 	vector <int> ans;
-	ans = solve (t, n, s);
+	ans = solve (t, n, patterns);
 
 	for (int i = 0; i < (int) ans.size (); i++)
 	{
