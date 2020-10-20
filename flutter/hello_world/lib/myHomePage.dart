@@ -1,12 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hello_world/database.dart';
 import 'post.dart';
 import 'postList.dart';
 import 'textInputWidget.dart';
 
 class MyHomePage extends StatefulWidget {
-  final String name;
+  final FirebaseUser user;
 
-  MyHomePage(this.name);
+  MyHomePage(this.user);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -16,9 +18,25 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Post> posts = [];
 
   void newPost(String text) {
+    var post = new Post(text, widget.user.displayName);
+    post.setId(savePost(post));
     setState(() {
-      this.posts.add(Post(text, widget.name));
+      this.posts.add(post);
     });
+  }
+
+  void updatePosts() {
+    getAllPosts().then((posts) => {
+          this.setState(() {
+            this.posts = posts;
+          })
+        });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    updatePosts();
   }
 
   @override
@@ -28,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text("Vijay's App"),
         ),
         body: Column(children: <Widget>[
-          Expanded(child: PostList(this.posts)),
+          Expanded(child: PostList(this.posts, widget.user)),
           TextInputWidget(this.newPost),
         ]));
   }
